@@ -44,7 +44,7 @@ namespace DownStream.Models
 
     public class Response
     {
-        public List<Customer> DownStreamCustomers { get; set; }
+        public required List<Customer> DownStreamCustomers { get; set; }
         public int DownStreamCutomerCount { get { return DownStreamCustomers.Sum(c => c.NumberOfCustomers); } }
         public ErrorDetails Errors { get; set; }
     }

@@ -6,11 +6,7 @@ namespace DownStreamTestProject
     [TestClass]
     public class DownSteamTests
     {
-        private readonly NodeServices nodeServices;
-        public DownSteamTests() 
-        {
-            nodeServices = new NodeServices();
-        }
+        private NodeServices nodeServices;
 
         [TestMethod]
         public void Return15CustomersSuccessTest()
@@ -68,7 +64,9 @@ namespace DownStreamTestProject
             };
             string error = string.Empty;
 
-            nodeServices.GenerateNodes(network.Branches, network.Customers, out error);
+            nodeServices = new NodeServices(network.Branches, network.Customers);
+
+            nodeServices.GenerateNodes(out error);
 
             var customers = nodeServices.QueryCustomersFromNode(selectedNode);
 
@@ -119,7 +117,7 @@ namespace DownStreamTestProject
                 },
             };
             string error = string.Empty;
-            nodeServices.GenerateNodes(network.Branches, network.Customers, out error);
+            nodeServices.GenerateNodes(out error);
             Assert.IsTrue(error.Equals("Node missing for customer, please check data and re-submit"));
         }
     }

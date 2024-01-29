@@ -9,12 +9,11 @@ namespace DownStream.Controllers
     public class NodeController : ControllerBase
     {
         private readonly ILogger<NodeController> _logger;
-        private readonly NodeServices _service;
+        private NodeServices _service;
 
         public NodeController(ILogger<NodeController> logger)
         {
             _logger = logger;
-            _service = new NodeServices();
         }
 
         [HttpPost(Name = "GetDownSteamNodes")]
@@ -25,10 +24,12 @@ namespace DownStream.Controllers
                 DownStreamCustomers = []
             };
 
+            _service = new NodeServices(json.Network.Branches, json.Network.Customers);
+
             try
             {
                 string error = string.Empty;
-                if (_service.GenerateNodes(json.Network.Branches, json.Network.Customers, out error))
+                if (_service.GenerateNodes(out error))
                 {
                     var customers = _service.QueryCustomersFromNode(json.SelectedNode);
                     response.DownStreamCustomers = customers;

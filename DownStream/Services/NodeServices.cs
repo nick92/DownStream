@@ -2,23 +2,23 @@
 
 namespace DownStream.Services
 {
-    public class NodeServices
+    public class NodeServices(List<Branch> _branches, List<Customer> _customers)
     {
-        private List<Node> _nodes = [];
-        private List<NodeLink> _branches = [];
-        private List<Customer> _customers = [];
+        private readonly List<Node> _nodes = new List<Node>();
+        private readonly List<Branch> _branches = _branches;
+        private readonly List<NodeLink> _links = new List<NodeLink>();
+        private readonly List<Customer> _customers = _customers;
 
-        public bool GenerateNodes(List<Branch> branches, List<Customer> customers, out string error)
+        public bool GenerateNodes(out string error)
         {
             error = string.Empty;
-            _customers = customers;
 
             try
             {
                 bool isfirst = true;
 
                 // loop through branches to create nodes and branches
-                foreach (var branch in branches)
+                foreach (var branch in _branches)
                 {
                     // check if exists and add parent node
                     var parentNode = GetOrCreateNode(branch.StartNode, isfirst);
@@ -71,7 +71,7 @@ namespace DownStream.Services
         // add link between 2 nodes
         private void CreateNodeLink(Guid parentId, Guid childId)
         {
-            _branches.Add(new NodeLink
+            _links.Add(new NodeLink
             {
                 Id = Guid.NewGuid(),
                 ParentNode = parentId,
@@ -94,7 +94,7 @@ namespace DownStream.Services
         public List<Customer> QueryCustomersFromNode(int selectedNode)
         {
             var customers = new List<Customer>();
-            var nodesToProcess = new Queue<Node>(_nodes.FindAll(node => node.Number == selectedNode));
+            var nodesToProcess = new Queue<Node>(_nodes.Where(node => node.Number == selectedNode).ToList());
             var processedNodes = new List<Node>();
 
             // process through all found nodes to accumulate customer count
@@ -115,7 +115,7 @@ namespace DownStream.Services
                 }
 
                 // query branches associated to node
-                var childBranches = _branches.FindAll(branch => branch.ParentNode == currentNode.Id);
+                var childBranches = _links.FindAll(link => link.ParentNode == currentNode.Id);
                 foreach (var childBranch in childBranches)
                 {
                     // query all nodes associated to branch
