@@ -31,7 +31,12 @@ namespace DownStream.Controllers
                 string error = string.Empty;
                 if (_service.GenerateNodes(out error))
                 {
-                    var customers = _service.QueryCustomersFromNode(json.SelectedNode);
+                    var customers = _service.QueryCustomersFromNode(json.SelectedNode, out error);
+                    if (customers.Count.Equals(0) && !string.IsNullOrEmpty(error))
+                    {
+                        throw new Exception(error);
+                    }
+
                     response.DownStreamCustomers = customers;
                 }
                 else

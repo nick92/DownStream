@@ -2,12 +2,12 @@
 
 namespace DownStream.Services
 {
-    public class NodeServices(List<Branch> _branches, List<Customer> _customers)
+    public class NodeServices(List<Branch> branches, List<Customer> customers)
     {
         private readonly List<Node> _nodes = new List<Node>();
-        private readonly List<Branch> _branches = _branches;
+        private readonly List<Branch> _branches = branches;
         private readonly List<NodeLink> _links = new List<NodeLink>();
-        private readonly List<Customer> _customers = _customers;
+        private readonly List<Customer> _customers = customers;
 
         public bool GenerateNodes(out string error)
         {
@@ -91,48 +91,63 @@ namespace DownStream.Services
         }
 
         // Query customers from given node
-        public List<Customer> QueryCustomersFromNode(int selectedNode)
+        public List<Customer> QueryCustomersFromNode(int selectedNode, out string error)
         {
+            error = string.Empty;
             var customers = new List<Customer>();
-            var nodesToProcess = new Queue<Node>(_nodes.Where(node => node.Number == selectedNode).ToList());
-            var processedNodes = new List<Node>();
 
-            // process through all found nodes to accumulate customer count
-            while (nodesToProcess.Count > 0)
+            try
             {
-                var currentNode = nodesToProcess.Dequeue();
-                if (processedNodes.Contains(currentNode))
-                {
-                    continue;
-                }
-                // add to processed nodes 
-                processedNodes.Add(currentNode);
+                var nodesToProcess = new Queue<Node>(_nodes.Where(node => node.Number == selectedNode).ToList());
+                var processedNodes = new List<Node>();
 
-                // query out customer against node if exists
-                if (currentNode.Customer != null)
+                if (nodesToProcess.Count.Equals(0))
                 {
-                    customers.Add(currentNode.Customer);
+                    error = "Selected node dones't exist, please enter a valid node id and try again";
+                    return customers;
                 }
 
-                // query branches associated to node
-                var childBranches = _links.FindAll(link => link.ParentNode == currentNode.Id);
-                foreach (var childBranch in childBranches)
+                // process through all found nodes to accumulate customer count
+                while (nodesToProcess.Count > 0)
                 {
-                    // query all nodes associated to branch
-                    var childNodes = _nodes.FindAll(node => node.Id == childBranch.ChildNode);
-                    foreach (var childNode in childNodes)
+                    var currentNode = nodesToProcess.Dequeue();
+                    if (processedNodes.Contains(currentNode))
                     {
-                        // check if node has been processed, if not add for processing
-                        if (!processedNodes.Contains(childNode))
+                        continue;
+                    }
+                    // add to processed nodes 
+                    processedNodes.Add(currentNode);
+
+                    // query out customer against node if exists
+                    if (currentNode.Customer != null)
+                    {
+                        customers.Add(currentNode.Customer);
+                    }
+
+                    // query branches associated to node
+                    var childBranches = _links.FindAll(link => link.ParentNode == currentNode.Id);
+                    foreach (var childBranch in childBranches)
+                    {
+                        // query all nodes associated to branch
+                        var childNodes = _nodes.FindAll(node => node.Id == childBranch.ChildNode);
+                        foreach (var childNode in childNodes)
                         {
-                            nodesToProcess.Enqueue(childNode);
+                            // check if node has been processed, if not add for processing
+                            if (!processedNodes.Contains(childNode))
+                            {
+                                nodesToProcess.Enqueue(childNode);
+                            }
                         }
                     }
                 }
+
+                return customers;
             }
-
-
-            return customers;
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return customers;
+            }
         }
     }
 }
