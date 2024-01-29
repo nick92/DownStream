@@ -16,7 +16,7 @@ namespace DownStream.Controllers
             _logger = logger;
         }
 
-        [HttpPost(Name = "GetDownSteamNodes")]
+        [HttpPost]
         public IActionResult Post(Request json)
         {
             var response = new Response

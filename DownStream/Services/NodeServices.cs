@@ -17,7 +17,7 @@ namespace DownStream.Services
             {
                 bool isfirst = true;
 
-                // loop through branches to create nodes and branches
+                // loop through branches to create nodes and links
                 foreach (var branch in _branches)
                 {
                     // check if exists and add parent node
@@ -98,9 +98,11 @@ namespace DownStream.Services
 
             try
             {
+                // query selected node by node id
                 var nodesToProcess = new Queue<Node>(_nodes.Where(node => node.Number == selectedNode).ToList());
                 var processedNodes = new List<Node>();
 
+                // if no nodes returned then return error
                 if (nodesToProcess.Count.Equals(0))
                 {
                     error = "Selected node dones't exist, please enter a valid node id and try again";
